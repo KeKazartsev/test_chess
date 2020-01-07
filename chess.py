@@ -32,7 +32,7 @@ def find(deck, curr):
 	return res
 
 def gen_test(i):
-	return lambda x : (x[0] > i[0] and x[1] != i[1] and abs(x[0]-i[0]) != abs(x[1]-i[1]))
+	return lambda x : (x[0] != i[0] and x[1] != i[1] and abs(x[0]-i[0]) != abs(x[1]-i[1]))
 
 # Улучшенная версия программы.# Ишем все решения вида: "все решения, если на первую клетку ставить ферзя" + "все решения, если на 1ю клетку не ставить ферзя"
 def find1(deck, curr):
@@ -47,10 +47,20 @@ def find1(deck, curr):
 		res2 = find1(deck[1:], curr)
 		return res1 + res2
 
+def find2(deck, curr):
+	counts[len(curr)] = counts[len(curr)] + 1
+
+	if len(deck) == 0:
+		return list(filter(lambda x : len(x) >= count, [curr]))
+	else:
+		filtered_deck = list(filter(gen_test(deck[0]), deck))
+		return find2(filtered_deck, curr + [deck[0]]) + find2(deck[1:], curr);
+
+
 # Подготовка
 deck = [(x, y) for x in range(count) for y in range(count)]
 counts = [0 for i in range(count + 1)]
-res = find(deck, [])
+res = find2(deck, [])
 
 # Проверка (ну так на всякий случай) корректности решений
 for i in res:
@@ -60,13 +70,11 @@ print("%d calls, calls details: " % sum(counts), counts)
 print()
 
 # А теперь для всех функций
-cnt = 0
-for f in [find, find1]:
+for f in [find, find1, find2]:
 	counts = [0 for i in range(count + 1)]
-	res0 = f(deck, [])
+	res0 = f(deck, [])	
 
 	is_ok = (len(res) == len(res0))
 	for i in res0:
 		is_ok = is_ok and check_solution(i)
-	print("find_%d = %r: %d solutions, %d calls, call details: " % (cnt, is_ok, len(res0), sum(counts)), counts)
-	cnt = cnt + 1
+	print("%s = %r: %d solutions, %d calls, call details: " % (f.__name__, is_ok, len(res0), sum(counts)), counts)
